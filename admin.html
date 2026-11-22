@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quản trị | Vé tàu trực tuyến</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/features.css">
+  <script defer src="js/portal.js"></script>
+  <script defer src="js/admin.js"></script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-content">
+      <a class="brand" href="index.html">Vé tàu trực tuyến</a>
+      <nav class="site-nav" aria-label="Điều hướng chính">
+        <a href="trips.html">Tìm chuyến</a>
+        <a href="account.html">Tài khoản</a>
+        <a href="admin.html" aria-current="page">Quản trị</a>
+      </nav>
+    </div>
+  </header>
+  <main class="container feature-page">
+    <div class="intro">
+      <h1>Quản trị vé tàu</h1>
+      <p id="admin-identity"></p>
+    </div>
+    <p id="admin-status" class="status" role="status" aria-atomic="true" tabindex="-1" hidden></p>
+    <a id="admin-login" class="feature-back" href="account.html" hidden>Mở trang Tài khoản</a>
+    <button id="admin-retry" class="secondary-button" type="button" hidden>Thử lại</button>
+    <div id="admin-workspace" hidden>
+      <section class="station-card" aria-labelledby="metrics-title">
+        <h2 id="metrics-title">Thống kê bán vé mô phỏng</h2>
+        <form id="statistics-form" class="feature-form-grid">
+          <div class="trip-field">
+            <label for="stats-from">Từ ngày</label>
+            <input id="stats-from" type="date">
+          </div>
+          <div class="trip-field">
+            <label for="stats-to">Đến ngày</label>
+            <input id="stats-to" type="date">
+          </div>
+          <button type="submit" class="secondary-button">Xem thống kê</button>
+        </form>
+        <dl class="feature-metrics" id="stat-metrics" hidden>
+          <div><dt>Tổng đơn tạo</dt><dd id="stat-total"></dd></div>
+          <div><dt>Chờ thanh toán</dt><dd id="stat-pending"></dd></div>
+          <div><dt>Đã thanh toán</dt><dd id="stat-paid"></dd></div>
+          <div><dt>Đã hủy</dt><dd id="stat-cancelled"></dd></div>
+          <div><dt>Đã hết hạn</dt><dd id="stat-expired"></dd></div>
+          <div><dt>Vé đã cấp</dt><dd id="stat-tickets"></dd></div>
+          <div><dt>Doanh thu mô phỏng</dt><dd id="stat-revenue"></dd></div>
+        </dl>
+        <div class="table-wrap feature-table" id="daily-table" hidden>
+          <table>
+            <caption>30 ngày gần nhất có thanh toán thành công trong khoảng đã chọn</caption>
+            <thead><tr><th scope="col">Ngày (giờ Việt Nam)</th><th scope="col">Lượt thành công</th>
+              <th scope="col">Doanh thu mô phỏng</th></tr></thead>
+            <tbody id="daily-rows"></tbody>
+          </table>
+        </div>
+      </section>
+      <section class="station-card" aria-labelledby="catalog-title">
+        <div class="section-header">
+          <h2 id="catalog-title">Quản lý ga</h2>
+          <button id="new-item" type="button">Thêm mới</button>
+        </div>
+        <nav class="feature-actions feature-tabs" aria-label="Danh mục quản trị">
+          <button type="button" class="secondary-button" data-resource="stations" aria-pressed="true">Ga</button>
+          <button type="button" class="secondary-button" data-resource="trains" aria-pressed="false">Đoàn tàu</button>
+          <button type="button" class="secondary-button" data-resource="trips" aria-pressed="false">Chuyến</button>
+          <button type="button" class="secondary-button" data-resource="bookings" aria-pressed="false">Đơn</button>
+          <button type="button" class="secondary-button" data-resource="users" aria-pressed="false">Tài khoản</button>
+        </nav>
+        <form id="catalog-editor" class="admin-form" hidden>
+          <div class="feature-edit-bar">
+            <h3 id="editor-title">Thêm bản ghi</h3>
+            <button type="button" id="editor-close" class="secondary-button">Đóng form</button>
+          </div>
+          <div id="editor-fields" class="feature-form-grid"></div>
+          <div class="feature-actions"><button type="submit">Lưu</button></div>
+        </form>
+        <form id="catalog-search" class="feature-form-grid">
+          <div class="trip-field">
+            <label for="admin-keyword">Từ khóa</label>
+            <input id="admin-keyword" maxlength="100">
+          </div>
+          <div class="trip-field" id="admin-status-filter" hidden>
+            <label for="status-filter">Trạng thái</label>
+            <select id="status-filter"></select>
+          </div>
+          <div class="trip-field" id="admin-from-filter" hidden>
+            <label for="catalog-from">Từ ngày</label>
+            <input id="catalog-from" type="date">
+          </div>
+          <div class="trip-field" id="admin-to-filter" hidden>
+            <label for="catalog-to">Đến ngày</label>
+            <input id="catalog-to" type="date">
+          </div>
+          <button type="submit" class="secondary-button">Tìm kiếm</button>
+        </form>
+        <p id="catalog-count" class="feature-kicker" role="status" aria-atomic="true"></p>
+        <div class="table-wrap feature-table">
+          <table aria-labelledby="catalog-title">
+            <thead><tr id="catalog-columns"></tr></thead>
+            <tbody id="catalog-rows"></tbody>
+          </table>
+        </div>
+        <div class="feature-actions">
+          <button id="catalog-prev" type="button" class="secondary-button">Trang trước</button>
+          <span id="catalog-page"></span>
+          <button id="catalog-next" type="button" class="secondary-button">Trang sau</button>
+        </div>
+      </section>
+    </div>
+  </main>
+  <footer class="site-footer"><div class="container">Hệ thống bán vé tàu trực tuyến</div></footer>
+</body>
+</html>
