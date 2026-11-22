@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chọn chỗ | Vé tàu trực tuyến</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .seats-page [hidden] { display: none; }
+    .seats-back { color: var(--primary); font-weight: 600; }
+    .seats-back:hover { text-decoration: underline; }
+    .seat-times { display: flex; flex-wrap: wrap; gap: 6px 22px; margin: 10px 0 0; }
+    .seat-inventory { margin-top: 24px; }
+    .seat-carriage + .seat-carriage { margin-top: 24px; }
+    .seat-carriage h3 { margin: 0 0 10px; }
+    .seat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(98px, 1fr));
+      gap: 10px;
+    }
+    .seat-grid .seat-option {
+      display: grid;
+      justify-items: center;
+      gap: 4px;
+      min-height: 66px;
+      padding: 8px;
+      border: 1px solid var(--border);
+      background: #f8fafc;
+      color: var(--text);
+    }
+    .seat-option small { font-size: 12px; font-weight: 500; }
+    .seat-grid .seat-option:not(:disabled):hover {
+      background: #eff6ff;
+      border-color: var(--primary);
+    }
+    .seat-grid .seat-option[aria-pressed="true"] {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #fff;
+    }
+    .seat-grid .seat-option[aria-pressed="true"]:not(:disabled):hover { background: #104a76; }
+    .seat-grid .seat-option:disabled { opacity: 1; background: #edf2f7; color: #526071; }
+    .seat-grid .seat-option[data-state="HELD"]:disabled { background: #fff7ed; color: #9a3412; }
+    .seat-selection { margin-top: 24px; padding-top: 18px; border-top: 1px solid var(--border); }
+    #selection-labels { margin: 8px 0 0; overflow-wrap: anywhere; }
+    #booking-form, #booking-feedback { margin-top: 20px; }
+    #passenger-fields {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr));
+      gap: 12px;
+      margin: 12px 0 16px;
+    }
+    .passenger-field { display: grid; gap: 6px; font-weight: 600; }
+    .passenger-field input {
+      width: 100%;
+      min-height: 44px;
+      padding: 8px 10px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font: inherit;
+      font-weight: 400;
+    }
+    #booking-feedback .status { margin-bottom: 8px; overflow-wrap: anywhere; }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-content">
+      <a class="brand" href="index.html">Vé tàu trực tuyến</a>
+      <nav class="site-nav" aria-label="Điều hướng chính">
+        <a href="trips.html">Tìm chuyến</a>
+        <a href="account.html">Tài khoản</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container seats-page">
+    <div class="intro">
+      <h1>Chọn chỗ</h1>
+      <p><a class="seats-back" href="trips.html">← Quay lại tìm chuyến</a></p>
+    </div>
+
+    <section class="station-card" id="seat-journey" aria-labelledby="seat-route" hidden>
+      <h2 id="seat-route"></h2>
+      <p class="search-hint" id="seat-trip-code"></p>
+      <p class="seat-times">
+        <span id="seat-departure"></span>
+        <span id="seat-arrival"></span>
+      </p>
+    </section>
+
+    <section class="station-card seat-inventory" aria-labelledby="inventory-title">
+      <div class="section-header">
+        <h2 id="inventory-title">Chỗ theo toa</h2>
+        <button id="reload-seats" type="button" class="secondary-button" hidden>Tải lại danh sách</button>
+      </div>
+      <p id="seat-status" class="status" role="status" aria-atomic="true" hidden></p>
+      <p id="seat-hint" class="search-hint" hidden>Chọn tối đa 6 chỗ trống.</p>
+      <div id="carriage-list"></div>
+
+      <section id="selection-summary" class="seat-selection" aria-labelledby="selection-title" hidden>
+        <div class="section-header">
+          <h2 id="selection-title">Chỗ đã chọn</h2>
+          <button id="clear-seats" type="button" class="secondary-button" disabled>Bỏ chọn tất cả</button>
+        </div>
+        <p id="selection-total" role="status" aria-atomic="true"></p>
+        <p id="selection-labels" class="search-hint"></p>
+        <form id="booking-form" aria-labelledby="passenger-title" hidden>
+          <h3 id="passenger-title">Họ tên hành khách</h3>
+          <div id="passenger-fields"></div>
+          <button id="hold-seats" type="submit">Giữ chỗ</button>
+        </form>
+      </section>
+      <div id="booking-feedback">
+        <p id="booking-status" class="status" role="status" aria-atomic="true" tabindex="-1" hidden></p>
+        <a id="booking-login" class="seats-back" href="account.html" target="_blank" rel="noopener" hidden>Đăng nhập trong tab mới</a>
+        <a id="view-booking" class="seats-back" hidden>Xem đơn và thanh toán mô phỏng</a>
+      </div>
+      <noscript>Bạn cần bật JavaScript để xem danh sách chỗ.</noscript>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">Hệ thống bán vé tàu trực tuyến</div>
+  </footer>
+
+  <script>
+    (() => {
+      'use strict';
+
+      const get = id => document.getElementById(id);
+      const tripIds = new URLSearchParams(location.search).getAll('trip_id');
+      const tripId = tripIds[0] || '';
+      const validTrip = tripIds.length === 1 && /^[1-9]\d{0,9}$/.test(tripId)
+        && Number(tripId) <= 2147483647;
+      const reload = get('reload-seats');
+      const carriageList = get('carriage-list');
+      const selected = new Set();
+      const available = new Map();
+      const passengerFields = new Map();
+      const bookingForm = get('booking-form');
+      const holdButton = get('hold-seats');
+      const maxSeats = 6;
+      let loading = false;
+      let submitting = false;
+      let pending = null;
+      let completed = false;
+
+      const money = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' });
+      const time = new Intl.DateTimeFormat('vi-VN', {
+        timeZone: 'Asia/Ho_Chi_Minh', dateStyle: 'short', timeStyle: 'short'
+      });
+
+      function showStatus(message, state = '') {
+        const status = get('seat-status');
+        status.textContent = message;
+        status.dataset.state = state;
+        status.hidden = !message;
+      }
+
+      function formatTime(value) {
+        const date = new Date(value);
+        return Number.isFinite(date.getTime()) && value ? time.format(date) : '—';
+      }
+
+      function showBookingStatus(message, state, login = false) {
+        const status = get('booking-status');
+        status.textContent = message;
+        status.dataset.state = state;
+        status.hidden = !message;
+        get('booking-login').hidden = !login;
+      }
+
+      function updateControls() {
+        const locked = submitting || pending !== null || completed;
+        reload.disabled = loading || submitting || pending !== null;
+        get('clear-seats').disabled = loading || locked || selected.size === 0;
+        for (const { button } of available.values()) button.disabled = locked;
+        for (const { input } of passengerFields.values()) input.readOnly = locked;
+        bookingForm.hidden = completed || selected.size === 0;
+        holdButton.disabled = loading || submitting;
+        holdButton.textContent = submitting ? 'Đang giữ chỗ…' : pending ? 'Gửi lại yêu cầu' : 'Giữ chỗ';
+      }
+
+      function renderPassengers() {
+        const fields = get('passenger-fields');
+        for (const [id, field] of passengerFields) {
+          if (selected.has(id)) continue;
+          field.label.remove();
+          passengerFields.delete(id);
+        }
+        for (const id of selected) {
+          if (passengerFields.has(id)) continue;
+          const label = document.createElement('label');
+          const input = document.createElement('input');
+          label.className = 'passenger-field';
+          label.textContent = available.get(id).label;
+          input.type = 'text';
+          input.required = true;
+          input.minLength = 2;
+          input.maxLength = 100;
+          input.addEventListener('input', () => input.setCustomValidity(''));
+          label.append(input);
+          fields.append(label);
+          passengerFields.set(id, { label, input });
+        }
+      }
+
+      function renderTrip(trip) {
+        get('seat-route').textContent = trip.origin_name + ' → ' + trip.destination_name;
+        get('seat-trip-code').textContent = 'Chuyến ' + trip.code + ' · Tàu ' + trip.train_code;
+        get('seat-departure').textContent = 'Khởi hành ' + formatTime(trip.departure_at);
+        get('seat-arrival').textContent = 'Đến nơi ' + formatTime(trip.arrival_at);
+        get('seat-journey').hidden = false;
+      }
+
+      function renderSelection() {
+        let total = 0;
+        const labels = [];
+        for (const id of selected) {
+          const seat = available.get(id);
+          total += seat.price;
+          labels.push(seat.label);
+        }
+        get('selection-total').textContent = selected.size + ' chỗ · Tổng dự kiến ' + money.format(total);
+        get('selection-labels').textContent = labels.join(' · ');
+        renderPassengers();
+        updateControls();
+      }
+
+      function toggleSeat(id) {
+        if (loading || submitting || pending || completed || !available.has(id)) return;
+        if (selected.has(id)) {
+          selected.delete(id);
+        } else {
+          if (selected.size >= maxSeats) {
+            showStatus('Bạn có thể chọn tối đa ' + maxSeats + ' chỗ.', 'error');
+            return;
+          }
+          selected.add(id);
+        }
+        available.get(id).button.setAttribute('aria-pressed', String(selected.has(id)));
+        showStatus('');
+        showBookingStatus('', '');
+        renderSelection();
+      }
+
+      function renderCarriages(carriages) {
+        const fragment = document.createDocumentFragment();
+        available.clear();
+        let totalSeats = 0;
+
+        for (const carriage of carriages) {
+          if (!Array.isArray(carriage?.seats)) throw new Error('Danh sách toa chưa hợp lệ.');
+          const section = document.createElement('section');
+          const heading = document.createElement('h3');
+          const grid = document.createElement('div');
+          const carriageLabel = 'Toa ' + carriage.carriage_number;
+          const types = { SOFT_SEAT: 'Ghế mềm', SLEEPER: 'Giường nằm' };
+          const type = Object.hasOwn(types, carriage.carriage_type) ? types[carriage.carriage_type] : '';
+          heading.textContent = type ? carriageLabel + ' · ' + type : carriageLabel;
+          section.className = 'seat-carriage';
+          grid.className = 'seat-grid';
+
+          for (const seat of carriage.seats) {
+            if (!seat || !Number.isSafeInteger(seat.id) || seat.id < 1
+                || !Number.isSafeInteger(seat.price) || seat.price < 0) {
+              throw new Error('Thông tin chỗ chưa hợp lệ.');
+            }
+            totalSeats++;
+            const label = carriageLabel + ', chỗ ' + seat.seat_number;
+            const button = document.createElement('button');
+            const title = document.createElement('span');
+            const detail = document.createElement('small');
+            button.type = 'button';
+            button.className = 'seat-option';
+            button.dataset.state = seat.state;
+            button.disabled = seat.state !== 'AVAILABLE';
+            title.textContent = 'Chỗ ' + seat.seat_number;
+            detail.textContent = button.disabled
+              ? (seat.state === 'HELD' ? 'Đang giữ' : seat.state === 'BOOKED' ? 'Đã đặt' : 'Không khả dụng')
+              : money.format(seat.price);
+            button.setAttribute('aria-label', label + ', ' + detail.textContent);
+            if (!button.disabled) {
+              button.setAttribute('aria-pressed', String(selected.has(seat.id)));
+              available.set(seat.id, { button, price: seat.price, label });
+              button.addEventListener('click', () => toggleSeat(seat.id));
+            }
+            button.append(title, detail);
+            grid.append(button);
+          }
+
+          section.append(heading, grid);
+          fragment.append(section);
+        }
+
+        const oldCount = selected.size;
+        for (const id of selected) {
+          if (!available.has(id)) selected.delete(id);
+        }
+        carriageList.replaceChildren(fragment);
+        carriageList.hidden = false;
+        get('selection-summary').hidden = totalSeats === 0;
+        get('seat-hint').hidden = available.size === 0;
+        renderSelection();
+        if (oldCount > selected.size) {
+          showStatus('Một số chỗ đã chọn không còn trống. Vui lòng kiểm tra lại.', 'error');
+        } else {
+          showStatus(available.size === 0 ? 'Chuyến này hiện chưa có chỗ trống.' : '');
+        }
+      }
+
+      async function loadSeats() {
+        if (!validTrip || loading || submitting || pending) return;
+        loading = true;
+        updateControls();
+        carriageList.hidden = true;
+        get('selection-summary').hidden = true;
+        get('seat-hint').hidden = true;
+        showStatus('Đang tải danh sách chỗ…', 'loading');
+
+        try {
+          const response = await fetch('/api/trips/' + tripId + '/seats', {
+            cache: 'no-store',
+            headers: { Accept: 'application/json' }
+          }).catch(() => { throw new Error('Không kết nối được máy chủ. Vui lòng thử lại.'); });
+          const data = await response.json().catch(() => null);
+          if (!response.ok || data?.ok !== true) {
+            throw new Error(data?.message || 'Không tải được danh sách chỗ. Vui lòng thử lại.');
+          }
+          if (data.trip?.id !== Number(tripId) || !Array.isArray(data.carriages)) {
+            throw new Error('Thông tin chuyến chưa hợp lệ.');
+          }
+          renderCarriages(data.carriages);
+          renderTrip(data.trip);
+        } catch (error) {
+          get('seat-journey').hidden = true;
+          showStatus(error.message, 'error');
+        } finally {
+          loading = false;
+          updateControls();
+        }
+      }
+
+      function prepareRequest() {
+        const items = [];
+        for (const id of selected) {
+          const { input } = passengerFields.get(id);
+          const name = input.value.trim();
+          if (name.length < 2 || name.length > 100 || !name.isWellFormed()
+              || /[\u0000-\u001f\u007f]/u.test(name)) {
+            input.setCustomValidity('Nhập họ tên từ 2 đến 100 ký tự hợp lệ.');
+            input.reportValidity();
+            return null;
+          }
+          items.push({ trip_seat_id: id, passenger_name: name });
+        }
+        return JSON.stringify({ idempotency_key: crypto.randomUUID(), items });
+      }
+
+      const bookingStates = {
+        PENDING_PAYMENT: 'Chờ thanh toán',
+        PAID: 'Đã thanh toán',
+        EXPIRED: 'Đã hết hạn',
+        CANCELLED: 'Đã hủy'
+      };
+
+      async function submitBooking(event) {
+        event.preventDefault();
+        if (loading || submitting || completed || selected.size === 0) return;
+        const retrying = pending !== null;
+        pending ??= prepareRequest();
+        if (!pending) return;
+        submitting = true;
+        let refresh = false;
+        updateControls();
+        showBookingStatus('Đang gửi yêu cầu giữ chỗ…', 'loading');
+
+        try {
+          const response = await fetch('/api/trips/' + tripId + '/bookings', {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
+            body: pending,
+            signal: AbortSignal.timeout(25000)
+          });
+          const data = await response.json().catch(() => null);
+          if (response.status === 401) {
+            if (!retrying) pending = null;
+            showBookingStatus('Đăng nhập bằng tài khoản khách hàng rồi gửi lại tại trang này.', 'error', true);
+            return;
+          }
+          if (!response.ok && response.status < 500 && data?.ok === false) {
+            pending = null;
+            refresh = data.code === 'SEATS_UNAVAILABLE' || data.code === 'TRIP_UNAVAILABLE';
+            showBookingStatus(data.message || 'Không thể giữ các chỗ đã chọn.', 'error');
+            return;
+          }
+          const booking = data?.booking;
+          if (!response.ok || data?.ok !== true || booking?.trip_id !== Number(tripId)
+              || typeof booking.code !== 'string' || !booking.code
+              || !Object.hasOwn(bookingStates, booking.status)
+              || !Number.isSafeInteger(booking.total_amount) || booking.total_amount < 0
+              || formatTime(booking.expires_at) === '—') {
+            throw new Error('Chưa nhận được kết quả giữ chỗ.');
+          }
+
+          pending = null;
+          completed = true;
+          refresh = true;
+          selected.clear();
+          for (const { button } of available.values()) button.setAttribute('aria-pressed', 'false');
+          renderSelection();
+          const expiry = booking.status === 'PENDING_PAYMENT'
+            ? ' · Giữ đến ' + formatTime(booking.expires_at) + ' (giờ Việt Nam)' : '';
+          showBookingStatus('Đơn ' + booking.code + ' · ' + bookingStates[booking.status]
+            + ' · ' + money.format(booking.total_amount) + expiry, 'success');
+          if (Number.isInteger(booking.id) && booking.id > 0) {
+            const link = get('view-booking');
+            link.href = 'booking.html?booking_id=' + booking.id;
+            link.textContent = booking.status === 'PENDING_PAYMENT'
+              ? 'Xem đơn và thanh toán mô phỏng' : 'Xem đơn và vé';
+            link.hidden = false;
+          }
+          get('booking-status').focus();
+        } catch {
+          showBookingStatus('Chưa xác nhận được kết quả. Bấm Gửi lại yêu cầu ngay tại trang này để kiểm tra.', 'error');
+        } finally {
+          submitting = false;
+          updateControls();
+          if (refresh) loadSeats();
+        }
+      }
+
+      get('clear-seats').addEventListener('click', () => {
+        for (const id of selected) available.get(id).button.setAttribute('aria-pressed', 'false');
+        selected.clear();
+        showStatus('');
+        showBookingStatus('', '');
+        renderSelection();
+      });
+      reload.addEventListener('click', loadSeats);
+      bookingForm.addEventListener('submit', submitBooking);
+
+      if (validTrip) {
+        reload.hidden = false;
+        loadSeats();
+      } else {
+        showStatus('Chưa xác định được chuyến tàu để xem chỗ.', 'error');
+      }
+    })();
+  </script>
+</body>
+</html>
+
