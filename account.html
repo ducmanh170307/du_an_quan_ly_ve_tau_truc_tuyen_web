@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tài khoản | Vé tàu trực tuyến</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .account-main { max-width: 560px; }
+    .account-main [hidden] { display: none; }
+    .account-card h2 { margin-bottom: 18px; }
+    .account-card .trip-field + .trip-field { margin-top: 16px; }
+    .account-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 22px;
+    }
+    .account-details { margin: 0; }
+    .account-details > div {
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .account-details dt { color: var(--muted); font-size: 14px; }
+    .account-details dd { margin: 2px 0 0; overflow-wrap: anywhere; }
+    .account-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 44px;
+      padding: 10px 18px;
+      border-radius: 8px;
+      background: var(--primary);
+      color: #ffffff;
+      font-weight: 600;
+    }
+    .account-link:hover { background: #104a76; }
+    .account-bookings { margin-top: 24px; }
+    .account-bookings > .section-header { flex-wrap: wrap; }
+    #booking-list {
+      display: grid;
+      gap: 12px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+    .booking-entry {
+      min-width: 0;
+      padding: 16px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow-wrap: anywhere;
+    }
+    .booking-entry h3, .booking-code { margin: 0; }
+    .booking-code { margin-top: 4px; color: var(--muted); font-size: 14px; }
+    .booking-details {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr));
+      gap: 10px;
+      margin: 12px 0 0;
+    }
+    .booking-details dt { color: var(--muted); font-size: 14px; }
+    .booking-details dd { margin: 2px 0 0; }
+    #bookings-more, .booking-cancel { margin-top: 14px; }
+    .booking-actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 14px; }
+    .booking-actions .booking-cancel { margin-top: 0; }
+    @media (max-width: 480px) {
+      .account-actions > * { flex-basis: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-content">
+      <a class="brand" href="index.html">Vé tàu trực tuyến</a>
+      <nav class="site-nav" aria-label="Điều hướng chính">
+        <a href="trips.html">Tìm chuyến</a>
+        <a href="index.html#danh-sach-ga">Tra cứu ga</a>
+        <a href="account.html" aria-current="page">Tài khoản</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container account-main">
+    <div class="intro">
+      <h1>Tài khoản</h1>
+    </div>
+
+    <div id="account-card" class="station-card account-card">
+      <p id="account-status" class="status" role="status" aria-atomic="true" hidden></p>
+      <button id="session-retry" type="button" hidden>Thử lại</button>
+
+      <section id="login-panel" aria-labelledby="login-title" hidden>
+        <h2 id="login-title">Đăng nhập</h2>
+        <form id="login-form" method="post" action="/api/auth/login">
+          <div class="trip-field">
+            <label for="login-email">Email</label>
+            <input id="login-email" name="email" inputmode="email" autocomplete="username"
+                   autocapitalize="none" spellcheck="false" maxlength="254" required>
+          </div>
+          <div class="trip-field">
+            <label for="login-password">Mật khẩu</label>
+            <input id="login-password" name="password" type="password"
+                   autocomplete="current-password" maxlength="256" required>
+          </div>
+          <div class="account-actions">
+            <button type="submit">Đăng nhập</button>
+            <button id="open-register" type="button" class="secondary-button">Tạo tài khoản</button>
+          </div>
+        </form>
+      </section>
+
+      <section id="register-panel" aria-labelledby="register-title" hidden>
+        <h2 id="register-title">Tạo tài khoản</h2>
+        <form id="register-form" method="post" action="/api/auth/register">
+          <div class="trip-field">
+            <label for="register-name">Họ và tên</label>
+            <input id="register-name" name="full_name" autocomplete="name" maxlength="100" required>
+          </div>
+          <div class="trip-field">
+            <label for="register-email">Email</label>
+            <input id="register-email" name="email" inputmode="email" autocomplete="username"
+                   autocapitalize="none" spellcheck="false" maxlength="254" required>
+          </div>
+          <div class="trip-field">
+            <label for="register-phone">Số điện thoại (không bắt buộc)</label>
+            <input id="register-phone" name="phone" type="tel" autocomplete="tel" maxlength="16">
+          </div>
+          <div class="trip-field">
+            <label for="register-password">Mật khẩu</label>
+            <input id="register-password" name="password" type="password" autocomplete="new-password"
+                   aria-describedby="password-hint" maxlength="256" required>
+            <p id="password-hint" class="search-hint">Từ 15 đến 128 ký tự.</p>
+          </div>
+          <div class="trip-field">
+            <label for="register-confirm">Nhập lại mật khẩu</label>
+            <input id="register-confirm" type="password" autocomplete="new-password"
+                   maxlength="256" required>
+          </div>
+          <div class="account-actions">
+            <button type="submit">Tạo tài khoản</button>
+            <button id="open-login" type="button" class="secondary-button">Quay lại đăng nhập</button>
+          </div>
+        </form>
+      </section>
+
+      <section id="profile-panel" aria-labelledby="profile-name" hidden>
+        <h2 id="profile-name" tabindex="-1"></h2>
+        <div id="profile-summary">
+          <dl class="account-details">
+            <div>
+              <dt>Email</dt>
+              <dd id="profile-email"></dd>
+            </div>
+            <div>
+              <dt>Số điện thoại</dt>
+              <dd id="profile-phone"></dd>
+            </div>
+            <div>
+              <dt>Loại tài khoản</dt>
+              <dd id="profile-role"></dd>
+            </div>
+          </dl>
+          <div class="account-actions">
+            <a class="account-link" href="trips.html">Tìm chuyến</a>
+            <a id="open-admin" class="account-link" href="admin.html" hidden>Quản trị</a>
+            <button id="edit-profile-button" type="button" class="secondary-button">Chỉnh sửa hồ sơ</button>
+            <button id="change-password-button" type="button" class="secondary-button">Đổi mật khẩu</button>
+            <button id="logout-button" type="button" class="secondary-button">Đăng xuất</button>
+          </div>
+        </div>
+        <form id="edit-profile-form" method="post" action="/api/auth/me" aria-labelledby="edit-profile-title" hidden>
+          <h3 id="edit-profile-title">Chỉnh sửa hồ sơ</h3>
+          <div class="trip-field">
+            <label for="edit-profile-name">Họ và tên</label>
+            <input id="edit-profile-name" name="full_name" autocomplete="name" minlength="2" maxlength="100" required>
+          </div>
+          <div class="trip-field">
+            <label for="edit-profile-phone">Số điện thoại (không bắt buộc)</label>
+            <input id="edit-profile-phone" name="phone" type="tel" autocomplete="tel" maxlength="16">
+          </div>
+          <div class="account-actions">
+            <button type="submit">Lưu thay đổi</button>
+            <button id="cancel-profile-edit" type="button" class="secondary-button">Hủy</button>
+          </div>
+        </form>
+        <form id="change-password-form" method="post" action="/api/auth/me/password" aria-labelledby="change-password-title" hidden>
+          <h3 id="change-password-title">Đổi mật khẩu</h3>
+          <div class="trip-field">
+            <label for="change-current-password">Mật khẩu hiện tại</label>
+            <input id="change-current-password" name="current_password" type="password"
+                   autocomplete="current-password" maxlength="256" required>
+          </div>
+          <div class="trip-field">
+            <label for="change-new-password">Mật khẩu mới</label>
+            <input id="change-new-password" name="new_password" type="password" autocomplete="new-password"
+                   aria-describedby="change-password-hint" maxlength="256" required>
+            <p id="change-password-hint" class="search-hint">Từ 15 đến 128 ký tự.</p>
+          </div>
+          <div class="trip-field">
+            <label for="change-confirm-password">Nhập lại mật khẩu mới</label>
+            <input id="change-confirm-password" type="password" autocomplete="new-password" maxlength="256" required>
+          </div>
+          <p class="search-hint">Bạn sẽ đăng nhập lại sau khi đổi mật khẩu.</p>
+          <div class="account-actions">
+            <button type="submit">Lưu mật khẩu mới</button>
+            <button id="cancel-password-change" type="button" class="secondary-button">Hủy</button>
+          </div>
+        </form>
+      </section>
+
+      <noscript>Bạn cần bật JavaScript để sử dụng trang tài khoản.</noscript>
+    </div>
+
+    <section id="booking-panel" class="station-card account-bookings" aria-labelledby="booking-title" hidden>
+      <div class="section-header">
+        <h2 id="booking-title">Đơn của tôi</h2>
+        <button id="reload-bookings" type="button" class="secondary-button">Tải lại danh sách</button>
+      </div>
+      <p id="booking-status" class="status" role="status" aria-atomic="true" tabindex="-1" hidden></p>
+      <ul id="booking-list"></ul>
+      <button id="bookings-more" type="button" class="secondary-button" hidden>Xem thêm</button>
+    </section>
+
+    <template id="booking-entry-template">
+      <li class="booking-entry">
+        <h3 class="booking-route"></h3>
+        <p class="booking-code"></p>
+        <dl class="booking-details">
+          <div><dt>Trạng thái</dt><dd data-field="status"></dd></div>
+          <div><dt>Tổng tiền</dt><dd data-field="amount"></dd></div>
+          <div><dt>Khởi hành</dt><dd data-field="departure"></dd></div>
+          <div><dt>Số chỗ</dt><dd data-field="seats"></dd></div>
+          <div class="booking-expiry" hidden><dt>Giữ đến</dt><dd data-field="expires"></dd></div>
+        </dl>
+        <div class="booking-actions">
+          <a class="account-link booking-details-link">Xem đơn và vé</a>
+          <button type="button" class="booking-cancel secondary-button" hidden>Hủy đơn</button>
+        </div>
+      </li>
+    </template>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">Hệ thống bán vé tàu trực tuyến</div>
+  </footer>
+
+  <script>
+    (() => {
+      'use strict';
+
+      const get = id => document.getElementById(id);
+      const status = get('account-status');
+      const loginForm = get('login-form');
+      const registerForm = get('register-form');
+      const editProfileForm = get('edit-profile-form');
+      const changePasswordForm = get('change-password-form');
+      const buttons = get('account-card').querySelectorAll('button');
+      const bookingPanel = get('booking-panel');
+      const bookingList = get('booking-list');
+      const reloadBookings = get('reload-bookings');
+      const moreBookings = get('bookings-more');
+      const bookingFormat = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' });
+      const bookingTime = new Intl.DateTimeFormat('vi-VN', {
+        timeZone: 'Asia/Ho_Chi_Minh', dateStyle: 'short', timeStyle: 'short'
+      });
+      const bookingStates = {
+        PENDING_PAYMENT: 'Chờ thanh toán',
+        PAID: 'Đã thanh toán',
+        CANCELLED: 'Đã hủy',
+        EXPIRED: 'Đã hết hạn'
+      };
+      const panels = {
+        login: get('login-panel'),
+        register: get('register-panel'),
+        profile: get('profile-panel'),
+        retry: get('session-retry')
+      };
+      let busy = false;
+      let currentUser = null;
+      let bookingRequest = null;
+      let nextBookingId = null;
+
+      function closeProfileForms() {
+        editProfileForm.hidden = true;
+        editProfileForm.reset();
+        changePasswordForm.hidden = true;
+        changePasswordForm.reset();
+        get('profile-summary').hidden = false;
+      }
+
+      function showStatus(message, state = '') {
+        status.hidden = !message;
+        status.dataset.state = state;
+        status.textContent = message;
+      }
+
+      function showPanel(name) {
+        for (const [key, panel] of Object.entries(panels)) {
+          panel.hidden = key !== name;
+        }
+        bookingPanel.hidden = name !== 'profile';
+        if (name !== 'profile') {
+          currentUser = null;
+          resetBookings();
+          closeProfileForms();
+          for (const id of ['name', 'email', 'phone', 'role']) {
+            get('profile-' + id).textContent = '';
+          }
+        }
+      }
+
+      async function requestAccount(path, body, method = body === undefined ? 'GET' : 'POST') {
+        const options = {
+          method,
+          credentials: 'same-origin',
+          cache: 'no-store',
+          headers: { Accept: 'application/json' }
+        };
+        if (body !== undefined) {
+          options.headers['Content-Type'] = 'application/json';
+          options.body = JSON.stringify(body);
+        }
+
+        let response;
+        try {
+          response = await fetch('/api/auth/' + path, options);
+        } catch {
+          throw new Error('Không kết nối được máy chủ. Vui lòng thử lại.');
+        }
+
+        const result = await response.json().catch(() => null);
+        if (!response.ok || result?.ok !== true) {
+          const message = typeof result?.message === 'string'
+            ? result.message
+            : 'Máy chủ không hoàn tất được yêu cầu. Vui lòng thử lại.';
+          const error = new Error(message);
+          error.status = response.status;
+          throw error;
+        }
+        return result;
+      }
+
+      function showBookingStatus(message, state = '') {
+        const notice = get('booking-status');
+        notice.textContent = message;
+        notice.dataset.state = state;
+        notice.hidden = !message;
+      }
+
+      function resetBookings() {
+        bookingRequest = null;
+        nextBookingId = null;
+        bookingList.replaceChildren();
+        moreBookings.hidden = true;
+        setBookingsBusy(false);
+        showBookingStatus('');
+      }
+
+      function setBookingsBusy(value) {
+        reloadBookings.disabled = value;
+        moreBookings.disabled = value;
+        for (const button of bookingList.querySelectorAll('.booking-cancel')) {
+          button.disabled = value;
+        }
+      }
+
+      function finishBookingRequest(request) {
+        if (bookingRequest !== request) return;
+        bookingRequest = null;
+        setBookingsBusy(false);
+      }
+
+      function showBookingError(error, fallback) {
+        if (error.status !== 401) {
+          showBookingStatus(error.message || fallback, 'error');
+          return;
+        }
+
+        resetBookings();
+        if (busy) {
+          showBookingStatus('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.', 'error');
+          return;
+        }
+        showPanel('login');
+        showStatus(error.message, 'error');
+        get('login-email').focus();
+      }
+
+      function renderBooking(item) {
+        if (!Number.isInteger(item?.id) || item.id < 1 || typeof item.code !== 'string'
+            || typeof item.origin_name !== 'string'
+            || typeof item.destination_name !== 'string' || typeof item.trip_code !== 'string'
+            || !Object.hasOwn(bookingStates, item.status) || !Number.isSafeInteger(item.total_amount)
+            || !Number.isSafeInteger(item.seat_count)) {
+          throw new Error('Thông tin đơn chưa hợp lệ. Vui lòng thử lại.');
+        }
+
+        const entry = get('booking-entry-template').content.cloneNode(true);
+        entry.querySelector('.booking-route').textContent = item.origin_name + ' → ' + item.destination_name;
+        entry.querySelector('.booking-code').textContent = 'Đơn ' + item.code + ' · Chuyến ' + item.trip_code;
+        entry.querySelector('.booking-details-link').href = 'booking.html?booking_id=' + item.id;
+        const values = {
+          status: bookingStates[item.status],
+          amount: bookingFormat.format(item.total_amount),
+          departure: bookingTime.format(new Date(item.departure_at)),
+          seats: String(item.seat_count)
+        };
+        if (item.status === 'PENDING_PAYMENT') {
+          entry.querySelector('.booking-expiry').hidden = false;
+          values.expires = bookingTime.format(new Date(item.expires_at)) + ' (giờ Việt Nam)';
+          const card = entry.firstElementChild;
+          const cancel = card.querySelector('.booking-cancel');
+          cancel.hidden = false;
+          cancel.setAttribute('aria-label', 'Hủy đơn ' + item.code);
+          cancel.addEventListener('click', () => cancelBooking(item, card));
+        }
+        for (const [field, value] of Object.entries(values)) {
+          entry.querySelector('[data-field="' + field + '"]').textContent = value;
+        }
+        return entry;
+      }
+
+      async function loadBookings(append = false) {
+        if (!currentUser || bookingRequest || (append && nextBookingId === null)) return;
+
+        const request = {};
+        bookingRequest = request;
+        setBookingsBusy(true);
+        showBookingStatus('Đang tải danh sách đơn…', 'loading');
+
+        try {
+          const query = append ? '?before_id=' + nextBookingId : '';
+          const result = await requestAccount('me/bookings' + query);
+          if (bookingRequest !== request) return;
+          const cursor = result.next_before_id;
+          if (!Array.isArray(result.items) || (cursor !== null && (!Number.isInteger(cursor) || cursor < 1))) {
+            throw new Error('Danh sách đơn chưa hợp lệ. Vui lòng thử lại.');
+          }
+
+          const entries = document.createDocumentFragment();
+          for (const item of result.items) entries.append(renderBooking(item));
+          if (!append) bookingList.replaceChildren();
+          bookingList.append(entries);
+          nextBookingId = cursor;
+          moreBookings.hidden = cursor === null;
+          showBookingStatus(bookingList.childElementCount === 0 ? 'Bạn chưa có đơn nào.' : '');
+        } catch (error) {
+          if (bookingRequest === request) {
+            showBookingError(error, 'Không tải được danh sách đơn.');
+          }
+        } finally {
+          finishBookingRequest(request);
+        }
+      }
+
+      async function cancelBooking(item, card) {
+        if (!currentUser || bookingRequest || !card.isConnected) return;
+        if (!window.confirm('Hủy đơn ' + item.code + ' và trả lại các chỗ đã giữ?')) return;
+
+        const request = {};
+        bookingRequest = request;
+        setBookingsBusy(true);
+        showBookingStatus('Đang hủy đơn…', 'loading');
+
+        try {
+          const { booking } = await requestAccount('me/bookings/' + item.id + '/cancel', {});
+          if (bookingRequest !== request) return;
+          if (booking?.id !== item.id || booking.code !== item.code
+              || (booking.status !== 'CANCELLED' && booking.status !== 'EXPIRED')) {
+            throw new Error('Chưa xác nhận được kết quả. Hãy tải lại danh sách đơn.');
+          }
+
+          card.replaceWith(renderBooking({ ...item, status: booking.status }));
+          const message = booking.status === 'CANCELLED'
+            ? 'Đã hủy đơn ' + item.code + ' và trả lại chỗ.'
+            : 'Đơn ' + item.code + ' đã hết hạn giữ chỗ.';
+          showBookingStatus(message, 'success');
+          get('booking-status').focus();
+        } catch (error) {
+          if (bookingRequest === request) {
+            showBookingError(error, 'Không thể hủy đơn lúc này.');
+          }
+        } finally {
+          finishBookingRequest(request);
+        }
+      }
+
+      async function runAction(message, action) {
+        if (busy) return;
+        busy = true;
+        buttons.forEach(button => { button.disabled = true; });
+        showStatus(message, 'loading');
+
+        try {
+          await action();
+        } catch (error) {
+          showStatus(error.message || 'Đã xảy ra lỗi. Vui lòng thử lại.', 'error');
+        } finally {
+          busy = false;
+          buttons.forEach(button => { button.disabled = false; });
+        }
+      }
+
+      function showProfile(user) {
+        if (!user || typeof user.full_name !== 'string' || typeof user.email !== 'string') {
+          throw new Error('Không đọc được thông tin tài khoản.');
+        }
+
+        get('profile-name').textContent = user.full_name;
+        get('profile-email').textContent = user.email;
+        get('profile-phone').textContent = user.phone || 'Chưa cập nhật';
+        const roles = { CUSTOMER: 'Khách hàng', ADMIN: 'Quản trị viên' };
+        get('profile-role').textContent = Object.hasOwn(roles, user.role)
+          ? roles[user.role] : 'Chưa xác định';
+        get('open-admin').hidden = user.role !== 'ADMIN';
+        const changedUser = currentUser?.id !== user.id;
+        currentUser = user;
+        closeProfileForms();
+        showPanel('profile');
+        if (changedUser) {
+          resetBookings();
+          loadBookings();
+        }
+      }
+
+      function checkSession() {
+        return runAction('Đang kiểm tra phiên đăng nhập…', async () => {
+          showPanel(null);
+          try {
+            const { user } = await requestAccount('me');
+            showProfile(user);
+            showStatus('');
+          } catch (error) {
+            if (error.status === 401) {
+              showPanel('login');
+              showStatus('');
+              return;
+            }
+            showPanel('retry');
+            throw error;
+          }
+        });
+      }
+
+      get('open-register').addEventListener('click', () => {
+        get('register-email').value = get('login-email').value.trim();
+        get('login-password').value = '';
+        showPanel('register');
+        showStatus('');
+        get('register-name').focus();
+      });
+
+      get('open-login').addEventListener('click', () => {
+        registerForm.reset();
+        showPanel('login');
+        showStatus('');
+        get('login-email').focus();
+      });
+
+      loginForm.addEventListener('submit', event => {
+        event.preventDefault();
+        runAction('Đang đăng nhập…', async () => {
+          const { user } = await requestAccount('login', {
+            email: get('login-email').value.trim(),
+            password: get('login-password').value
+          });
+          showProfile(user);
+          loginForm.reset();
+          showStatus('Đăng nhập thành công.', 'success');
+          get('profile-name').focus();
+        });
+      });
+
+      function readNewPassword(input, confirmation) {
+        const password = input.value;
+        const length = Array.from(password).length;
+        if (length < 15 || length > 128) {
+          showStatus('Mật khẩu phải từ 15 đến 128 ký tự.', 'error');
+          input.focus();
+          return null;
+        }
+        if (password !== confirmation.value) {
+          showStatus('Hai ô mật khẩu chưa khớp.', 'error');
+          confirmation.focus();
+          return null;
+        }
+        return password;
+      }
+
+      registerForm.addEventListener('submit', event => {
+        event.preventDefault();
+        if (busy) return;
+
+        const password = readNewPassword(get('register-password'), get('register-confirm'));
+        if (password === null) return;
+
+        runAction('Đang tạo tài khoản…', async () => {
+          const { user } = await requestAccount('register', {
+            full_name: get('register-name').value.trim(),
+            email: get('register-email').value.trim(),
+            phone: get('register-phone').value.trim(),
+            password
+          });
+          const email = user?.email || get('register-email').value.trim();
+          registerForm.reset();
+          get('login-email').value = email;
+          showPanel('login');
+          showStatus('Tạo tài khoản thành công. Bạn có thể đăng nhập ngay.', 'success');
+          get('login-password').focus();
+        });
+      });
+
+      get('edit-profile-button').addEventListener('click', () => {
+        if (!currentUser || busy) return;
+        get('edit-profile-name').value = currentUser.full_name;
+        get('edit-profile-phone').value = currentUser.phone || '';
+        get('profile-summary').hidden = true;
+        editProfileForm.hidden = false;
+        showStatus('');
+        get('edit-profile-name').focus();
+      });
+
+      get('cancel-profile-edit').addEventListener('click', () => {
+        closeProfileForms();
+        showStatus('');
+        get('edit-profile-button').focus();
+      });
+
+      editProfileForm.addEventListener('submit', event => {
+        event.preventDefault();
+        runAction('Đang lưu hồ sơ…', async () => {
+          try {
+            const { user } = await requestAccount('me', {
+              full_name: get('edit-profile-name').value.trim(),
+              phone: get('edit-profile-phone').value.trim()
+            }, 'PATCH');
+            showProfile(user);
+            showStatus('Cập nhật hồ sơ thành công.', 'success');
+            get('profile-name').focus();
+          } catch (error) {
+            if (error.status === 401) {
+              showPanel('login');
+              get('login-email').focus();
+            }
+            throw error;
+          }
+        });
+      });
+
+      get('change-password-button').addEventListener('click', () => {
+        if (!currentUser || busy) return;
+        get('profile-summary').hidden = true;
+        changePasswordForm.hidden = false;
+        showStatus('');
+        get('change-current-password').focus();
+      });
+
+      get('cancel-password-change').addEventListener('click', () => {
+        closeProfileForms();
+        showStatus('');
+        get('change-password-button').focus();
+      });
+
+      changePasswordForm.addEventListener('submit', event => {
+        event.preventDefault();
+        if (!currentUser || busy) return;
+
+        const newPassword = readNewPassword(get('change-new-password'), get('change-confirm-password'));
+        if (newPassword === null) return;
+
+        const currentInput = get('change-current-password');
+        const currentPassword = currentInput.value;
+        const email = currentUser.email;
+        runAction('Đang đổi mật khẩu…', async () => {
+          try {
+            const { message } = await requestAccount('me/password', {
+              current_password: currentPassword,
+              new_password: newPassword
+            });
+            showPanel('login');
+            loginForm.reset();
+            get('login-email').value = email;
+            showStatus(message, 'success');
+            get('login-password').focus();
+          } catch (error) {
+            if (error.status === 401) {
+              showPanel('login');
+              loginForm.reset();
+              get('login-email').value = email;
+              get('login-password').focus();
+            } else {
+              currentInput.value = '';
+              currentInput.focus();
+            }
+            throw error;
+          }
+        });
+      });
+
+      get('logout-button').addEventListener('click', () => {
+        runAction('Đang đăng xuất…', async () => {
+          await requestAccount('logout', {});
+          showPanel('login');
+          showStatus('Đăng xuất thành công.', 'success');
+          get('login-email').focus();
+        });
+      });
+
+      get('session-retry').addEventListener('click', checkSession);
+      reloadBookings.addEventListener('click', () => loadBookings());
+      moreBookings.addEventListener('click', () => loadBookings(true));
+      window.addEventListener('pageshow', event => {
+        if (event.persisted) checkSession();
+      });
+      checkSession();
+    })();
+  </script>
+</body>
+</html>
