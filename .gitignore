@@ -1,0 +1,16 @@
+# Thu vien Node.js da cai
+node_modules/
+
+# Cau hinh rieng va mat khau
+.env
+.env.*
+
+# Giu lai mau cau hinh khong chua bi mat
+!.env.example
+
+# Tep nhat ky
+*.log
+
+# Tep he dieu hanh
+.DS_Store
+Thumbs.db
