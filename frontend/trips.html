@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tìm chuyến tàu | Vé tàu trực tuyến</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script src="js/trips.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-content">
+      <a class="brand" href="index.html">Vé tàu trực tuyến</a>
+      <nav class="site-nav" aria-label="Điều hướng chính">
+        <a href="trips.html" aria-current="page">Tìm chuyến</a>
+        <a href="index.html#danh-sach-ga">Tra cứu ga</a>
+        <a href="account.html">Tài khoản</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="intro" aria-labelledby="page-title">
+      <p class="eyebrow">HÀNH TRÌNH CỦA BẠN</p>
+      <h1 id="page-title">Tìm chuyến tàu</h1>
+      <p>Chọn ga đi, ga đến và ngày khởi hành để tìm chuyến phù hợp.</p>
+    </section>
+
+    <section class="station-card trip-search-card"
+             aria-labelledby="trip-search-title">
+      <h2 id="trip-search-title">Thông tin hành trình</h2>
+
+      <form id="trip-search-form" role="search"
+            aria-describedby="trip-search-hint">
+        <div class="trip-search-grid">
+          <div class="trip-field">
+            <label for="origin-id">Ga đi</label>
+            <select id="origin-id" name="origin_id" disabled>
+              <option value="">Tất cả ga đi</option>
+            </select>
+          </div>
+
+          <div class="trip-field">
+            <label for="destination-id">Ga đến</label>
+            <select id="destination-id" name="destination_id" disabled>
+              <option value="">Tất cả ga đến</option>
+            </select>
+          </div>
+
+          <div class="trip-field">
+            <label for="departure-date">Ngày khởi hành</label>
+            <input id="departure-date" name="date" type="date" disabled>
+          </div>
+        </div>
+
+        <p id="trip-search-hint" class="search-hint">
+          Để trống bộ lọc để xem các chuyến đang mở bán, chưa khởi hành.
+        </p>
+
+        <div class="trip-search-actions">
+          <button id="trip-search-button" type="submit" disabled>
+            Tìm chuyến
+          </button>
+          <button id="trip-clear-button" class="secondary-button"
+                  type="button" disabled>
+            Xóa bộ lọc
+          </button>
+        </div>
+      </form>
+    </section>
+
+    <section class="station-card trip-results-card"
+             aria-labelledby="trip-results-title">
+      <div class="section-header">
+        <div>
+          <h2 id="trip-results-title">Chuyến tàu phù hợp</h2>
+          <p id="trip-count" class="result-count">Chưa tải dữ liệu</p>
+        </div>
+        <button id="trip-reload-button" type="button" disabled>
+          Tải lại danh sách
+        </button>
+      </div>
+
+      <p id="trip-status" class="status" role="status"
+         aria-live="polite" aria-atomic="true">
+        Chưa tải danh sách chuyến.
+      </p>
+
+      <div class="table-wrap">
+        <table class="trips-table">
+          <caption>
+            Giờ khởi hành và giờ đến hiển thị theo giờ Việt Nam.
+          </caption>
+          <thead>
+            <tr>
+              <th scope="col">Mã chuyến</th>
+              <th scope="col">Hành trình</th>
+              <th scope="col">Khởi hành</th>
+              <th scope="col">Giờ đến</th>
+              <th scope="col">Chỗ trống</th>
+              <th scope="col">Giá từ</th>
+            </tr>
+          </thead>
+          <tbody id="trips-body">
+            <tr>
+              <td colspan="6">Dữ liệu chuyến sẽ hiển thị tại đây.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <nav class="trip-pagination" aria-label="Phân trang chuyến tàu">
+        <button id="trip-prev-button" class="secondary-button"
+                type="button" disabled>
+          Trang trước
+        </button>
+        <p id="trip-page-info" role="status" aria-live="polite">
+          Chưa tải dữ liệu
+        </p>
+        <button id="trip-next-button" class="secondary-button"
+                type="button" disabled>
+          Trang sau
+        </button>
+      </nav>
+    </section>
+
+    <noscript>Bạn cần bật JavaScript để tìm chuyến tàu.</noscript>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">Hệ thống bán vé tàu trực tuyến</div>
+  </footer>
+</body>
+</html>
