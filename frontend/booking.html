@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chi tiết đơn và vé | Vé tàu trực tuyến</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/features.css">
+  <script defer src="js/portal.js"></script>
+  <script defer src="js/booking.js"></script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-content">
+      <a class="brand" href="index.html">Vé tàu trực tuyến</a>
+      <nav class="site-nav" aria-label="Điều hướng chính">
+        <a href="trips.html">Tìm chuyến</a>
+        <a href="account.html">Tài khoản</a>
+      </nav>
+    </div>
+  </header>
+  <main class="container feature-page booking-page">
+    <div class="intro">
+      <h1>Chi tiết đơn và vé</h1>
+      <p><a class="feature-back" href="account.html#booking-title">← Đơn của tôi</a></p>
+    </div>
+    <section class="station-card" aria-labelledby="order-title">
+      <div class="section-header">
+        <h2 id="order-title">Thông tin đơn</h2>
+        <button id="reload-order" class="secondary-button" type="button">Tải lại đơn</button>
+      </div>
+      <p id="order-notice" class="status" role="status" aria-atomic="true" hidden></p>
+      <a id="order-login" href="account.html" class="feature-back" hidden>Đăng nhập</a>
+      <div id="order-data" hidden>
+        <h3 id="order-journey"></h3>
+        <p id="order-code" class="feature-kicker"></p>
+        <dl class="feature-fields">
+          <div><dt>Trạng thái</dt><dd id="order-status"></dd></div>
+          <div><dt>Tổng tiền</dt><dd id="order-total"></dd></div>
+          <div><dt>Khởi hành</dt><dd id="order-departure"></dd></div>
+          <div><dt>Đến nơi</dt><dd id="order-arrival"></dd></div>
+          <div id="order-expires-row" hidden><dt>Giữ đến</dt><dd id="order-expires"></dd></div>
+          <div id="order-paid-row" hidden><dt>Thanh toán mô phỏng lúc</dt><dd id="order-paid"></dd></div>
+        </dl>
+        <div class="feature-actions">
+          <button id="print-tickets" type="button" class="secondary-button" hidden>In vé</button>
+        </div>
+      </div>
+    </section>
+    <section id="payment-card" class="station-card" aria-labelledby="payment-title" hidden>
+      <h2 id="payment-title">Thanh toán mô phỏng</h2>
+      <p class="feature-kicker">Giao dịch phục vụ demo. Hệ thống không thu tiền.</p>
+      <p id="payment-time"></p>
+      <form id="payment-form">
+        <div class="trip-field">
+          <label for="payment-outcome">Kết quả mô phỏng</label>
+          <select id="payment-outcome">
+            <option value="SUCCESS">Thành công</option>
+            <option value="FAILED">Thất bại</option>
+          </select>
+        </div>
+        <div class="feature-actions">
+          <button id="pay-button" type="submit">Thực hiện thanh toán mô phỏng</button>
+        </div>
+      </form>
+    </section>
+    <section id="ticket-card" class="station-card" aria-labelledby="ticket-title" hidden>
+      <h2 id="ticket-title">Hành khách và chỗ</h2>
+      <div class="table-wrap feature-table">
+        <table>
+          <thead><tr><th scope="col">Hành khách</th><th scope="col">Toa</th><th scope="col">Chỗ</th>
+            <th scope="col">Giá</th><th scope="col">Trạng thái</th><th scope="col">Mã vé</th></tr></thead>
+          <tbody id="ticket-rows"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+  <footer class="site-footer"><div class="container">Hệ thống bán vé tàu trực tuyến</div></footer>
+</body>
+</html>
