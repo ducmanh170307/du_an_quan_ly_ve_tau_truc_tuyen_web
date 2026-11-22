@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tra cứu ga tàu | Vé tàu trực tuyến</title>
+
+  <!-- Ket noi CSS va JavaScript. -->
+  <link rel="stylesheet" href="css/style.css">
+  <script src="js/app.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+  <div class="container header-content">
+    <a class="brand" href="index.html">Vé tàu trực tuyến</a>
+
+    <nav class="site-nav" aria-label="Điều hướng chính">
+      <a href="trips.html">Tìm chuyến</a>
+      <a href="index.html#danh-sach-ga" aria-current="page">
+        Tra cứu ga
+      </a>
+      <a href="account.html">Tài khoản</a>
+    </nav>
+  </div>
+</header>
+  <main class="container">
+    <section class="intro" aria-labelledby="page-title">
+      <p class="eyebrow">THÔNG TIN NHÀ GA</p>
+      <h1 id="page-title">Tra cứu ga tàu</h1>
+      <p>
+        Xem mã ga, tên ga và thành phố
+        để chuẩn bị cho hành trình của bạn.
+      </p>
+    </section>
+
+    <section id="danh-sach-ga"
+             class="station-card"
+             aria-labelledby="stations-title">
+
+      <div class="section-header">
+        <div>
+          <h2 id="stations-title">Danh sách ga</h2>
+          <p id="station-count">Chưa tải dữ liệu</p>
+        </div>
+
+        <button id="reload-button" type="button" disabled>
+          Tải lại danh sách
+        </button>
+      </div>
+
+      <!-- Khung tim kiem -->
+      <form id="search-form" class="search-form" role="search">
+        <label for="keyword">
+          Mã ga, tên ga hoặc thành phố
+        </label>
+
+        <div class="search-row">
+          <input
+            id="keyword"
+            name="keyword"
+            type="search"
+            maxlength="100"
+            placeholder="Ví dụ: HN hoặc Huế"
+            aria-describedby="search-hint"
+          >
+
+          <div class="search-actions">
+            <button id="search-button" type="submit" disabled>
+              Tìm kiếm
+            </button>
+
+            <button id="clear-button"
+                    class="secondary-button"
+                    type="button"
+                    disabled>
+              Xóa bộ lọc
+            </button>
+          </div>
+        </div>
+
+        <p id="search-hint" class="search-hint">
+          Tối đa 100 ký tự. Để trống để xem tất cả ga.
+        </p>
+      </form>
+
+      <p id="status-message"
+         class="status"
+         role="status"
+         aria-live="polite">
+        Chưa tải danh sách ga.
+      </p>
+
+      <div class="table-wrap">
+        <table>
+          <caption>Thông tin các ga đang hoạt động</caption>
+
+          <thead>
+            <tr>
+              <th scope="col">STT</th>
+              <th scope="col">Mã ga</th>
+              <th scope="col">Tên ga</th>
+              <th scope="col">Thành phố</th>
+            </tr>
+          </thead>
+
+          <tbody id="stations-body">
+            <tr>
+              <td colspan="4">Dữ liệu sẽ hiển thị tại đây.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <noscript>
+      Bạn cần bật JavaScript để tải danh sách ga.
+    </noscript>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      Hệ thống bán vé tàu trực tuyến
+    </div>
+  </footer>
+</body>
+</html>
